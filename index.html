@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Acoustic Camera — see where the sound is</title>
+<meta name="description" content="A microphone array POC: delay-and-sum beamforming, spatial aliasing and aperture-vs-resolution, simulated properly so the array can be designed before it is built.">
+<meta name="theme-color" content="#05080a">
+<meta property="og:title" content="Acoustic Camera — see where the sound is">
+<meta property="og:description" content="Point an array at a wall and see the leak. Beam pattern, grating lobes and resolution, computed live.">
+<meta property="og:type" content="website">
+<link rel="canonical" href="https://vishnuvsdevtech.github.io/acoustic-camera/">
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+
+<header class="bar">
+  <div class="brand"><i></i><span>ACOUSTIC CAMERA</span></div>
+  <div class="right"><span class="hint" id="hint">click the wall to move the source</span></div>
+</header>
+
+<main>
+  <section class="hero">
+    <p class="eyebrow mono">delay-and-sum beamforming</p>
+    <h1>Point an array at a wall.<br><em>See where the sound is.</em></h1>
+    <p class="lede">
+      A microphone array measures the <strong>time difference</strong> between mics, and that
+      difference is the bearing. Overlay that on a camera and a hissing valve, a leaking gasket or
+      an arcing relay becomes a bright spot you can put your finger on.
+      This page computes the real array response — including the failure mode that ruins most
+      first builds.
+    </p>
+    <div class="specs mono"><span id="spN">6 mics</span><span id="spD">40 mm</span><span id="spF">2.0 kHz</span><span id="spRes">—</span></div>
+  </section>
+
+  <section class="stage">
+    <div class="panel scene">
+      <canvas id="scene" width="960" height="430"></canvas>
+      <div class="badge mono" id="warning">—</div>
+    </div>
+
+    <div class="panel resp">
+      <canvas id="resp" width="960" height="200"></canvas>
+      <div class="axis mono"><span>−90°</span><span>0°</span><span>+90°</span></div>
+    </div>
+  </section>
+
+  <section class="controls">
+    <label><span class="mono">mics</span><input id="n" type="range" min="2" max="16" step="2" value="6"><b class="mono" id="nVal">6</b></label>
+    <label><span class="mono">spacing</span><input id="d" type="range" min="10" max="120" step="5" value="40"><b class="mono" id="dVal">40 mm</b></label>
+    <label><span class="mono">frequency</span><input id="f" type="range" min="300" max="8000" step="50" value="2000"><b class="mono" id="fVal">2000 Hz</b></label>
+    <label><span class="mono">source</span><input id="a" type="range" min="-80" max="80" step="1" value="32"><b class="mono" id="aVal">32°</b></label>
+  </section>
+
+  <section class="readout mono" id="readout"></section>
+
+  <section class="notes">
+    <h2>What this is actually computing</h2>
+    <p>
+      For a linear array of <span class="mono">N</span> mics spaced <span class="mono">d</span> apart,
+      steered to angle φ while the source sits at θ, the normalised response is
+      <span class="mono">|Σ e^{j·k·d·n·(sinθ − sinφ)}| / N</span>, with
+      <span class="mono">k = 2πf/c</span>. Delay-and-sum. The beam points at θ by construction;
+      everything interesting is in what else it points at.
+    </p>
+
+    <h2>The three things that decide whether a build works</h2>
+    <table>
+      <tr><th>Property</th><th>Governed by</th><th>Failure</th></tr>
+      <tr><td>Resolution — how tightly it points</td><td>aperture: <span class="mono">N·d</span> vs wavelength</td><td>too narrow an array smears every source into one blob</td></tr>
+      <tr><td>Aliasing — ghost sources</td><td>spacing: <span class="mono">d ≤ λ/2</span></td><td>grating lobes appear as phantom sources that are physically impossible</td></tr>
+      <tr><td>Low-frequency reach</td><td>aperture vs wavelength</td><td>below ~1 kHz the beam widens until it cannot separate anything</td></tr>
+    </table>
+    <p class="warn">
+      Drag <span class="mono">spacing</span> past <span class="mono">c/2f</span> and watch the
+      ghost lobes appear — the array starts hearing sounds that are not there. This is the single
+      most common reason a DIY array "works" in testing and fails in a plant room.
+    </p>
+
+    <h2>Scope, honestly</h2>
+    <p>
+      This is a <strong>simulation of the array response</strong>, not a recording. It models the
+      physics exactly, which is what you need before buying mics. It does not model reverberation,
+      microphone mismatch, near-field curvature or self-noise — all of which degrade a real array,
+      which is why <span class="mono">tools/beamform.py</span> ships alongside: it runs the same
+      delay-and-sum on a real multi-channel WAV, so the code path exists the day the hardware does.
+    </p>
+  </section>
+</main>
+
+<footer class="foot mono"><span>Acoustic Camera · POC</span><span>beamforming · aliasing · aperture</span></footer>
+<script src="assets/array.js"></script>
+</body>
+</html>
