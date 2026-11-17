@@ -14,7 +14,7 @@
   const sctx = scene.getContext('2d');
   const rctx = resp.getContext('2d');
 
-  const S = { n: 6, d: 0.040, f: 2000, srcDeg: 32, peak: 0 };
+  const S = { n: 8, d: 0.080, f: 2000, srcDeg: 32, peak: 0 };
 
   const el = (id) => document.getElementById(id);
   const rad = (x) => (x * Math.PI) / 180;
@@ -86,7 +86,7 @@
 
     // beam wedge from the array to the estimated bearing
     const bw = rad(Math.max(1.5, beamwidthDeg() / 2));
-    const beamA = -Math.PI / 2 - rad(pk[0]);      // 0 deg = straight up
+    const beamA = -Math.PI / 2 + rad(pk[0]);      // 0 deg = straight up, +ve = right
     sctx.save();
     sctx.translate(cx, cy);
     const grad = sctx.createRadialGradient(0, 0, 8, 0, 0, cy - wallY);
